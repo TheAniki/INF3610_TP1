@@ -265,7 +265,6 @@ void TaskComputing(void* pdata) {
 	Packet* packet = NULL;
 	OS_TICK actualticks = 0;
 	while (true) {
-		//		TODO:
 		//		1) Appel de fonction à compléter, 2) compléter safeprint et 3) compléter err_msg
 		packet = OSTaskQPend(0, OS_OPT_PEND_NON_BLOCKING, &msg_size, &ts, &err);//***
 		safeprintf("Nb de paquets dans le fifo d'entrée - apres consommation de TaskComputing: %d \n", mutPrint.PendList.NbrEntries);//***
