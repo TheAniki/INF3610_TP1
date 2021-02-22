@@ -267,23 +267,21 @@ void TaskComputing(void* pdata) {
 	while (true) {
 		//		TODO:
 		//		1) Appel de fonction à compléter, 2) compléter safeprint et 3) compléter err_msg
-		OSTaskQPend(0, OS_OPT_PEND_NON_BLOCKING, &msg_size, &ts, &err);//***
+		packet = OSTaskQPend(0, OS_OPT_PEND_NON_BLOCKING, &msg_size, &ts, &err);//***
 		safeprintf("Nb de paquets dans le fifo d'entrée - apres consommation de TaskComputing: %d \n", mutPrint.PendList.NbrEntries);//***
-		//err_msg("À compléter",err);
+		err_msg("TaskComputing: Erreur sur la recherche du prochain paquet", err); //***
 
 		// ****************************************************************** //
-		while (!false == true) {
 			/* On simule un temps de traitement avec ce compteur bidon.
 			 * Cette boucle devrait prendre entre 2 et 4 ticks d'OS (considérez
 			 * exactement 3 ticks pour la question dans l'énoncé).
 			 */
 			 //		Code de l'attente active à compléter, utilisez la constante WAITFORComputing 
-			actualticks = OSTimeGet(&err);
-			printf("Attente active de 3 ticks \r\n");
-			while (3 + actualticks > OSTimeGet(&err)) {}
+		actualticks = OSTimeGet(&err);
+		printf("Attente active de 3 ticks \r\n");
+		while (WAITFORComputing > OSTimeGet(&err)) {}
 
-			OSTimeDlyHMSM(0, 0, 10, 0, OS_OPT_TIME_HMSM_STRICT, &err);
-		}
+		OSTimeDlyHMSM(0, 0, 10, 0, OS_OPT_TIME_HMSM_STRICT, &err);
 		// ****************************************************************** //
 
 		//Verification de l'espace d'addressage
@@ -313,19 +311,19 @@ void TaskComputing(void* pdata) {
 			switch (packet->type) {
 			case PACKET_VIDEO:
 				//			1) Appel de fonction à compléter et 2) compléter safeprint
-				OSQPost(&highQ, packet, sizeof(Packet), OS_OPT_POST_FIFO, &err); // ***************** a verifier message
+				OSQPost(&highQ, packet, sizeof(Packet), OS_OPT_POST_FIFO, &err); // ***
 				safeprintf("Nb de paquets dans la queue de haute priorité - apres production de TaskComputing: %d \n", highQ.MsgQ.NbrEntries);//***
 				break;
 
 			case PACKET_AUDIO:
 				//			1) Appel de fonction à compléter et 2) compléter safeprint
-				OSQPost(&mediumQ, packet, sizeof(Packet), OS_OPT_POST_FIFO, &err); // ***************** a verifier message
+				OSQPost(&mediumQ, packet, sizeof(Packet), OS_OPT_POST_FIFO, &err); // ***
 				safeprintf("Nb de paquets dans la queue de moyenne priorité - apres production de TaskComputing: %d \n", mediumQ.MsgQ.NbrEntries);//***
 				break;
 
 			case PACKET_AUTRE:
 				//			1) Appel de fonction à compléter et 2) compléter safeprint
-				OSQPost(&lowQ, packet, sizeof(Packet), OS_OPT_POST_FIFO, &err); // ***************** a verifier message
+				OSQPost(&lowQ, packet, sizeof(Packet), OS_OPT_POST_FIFO, &err); // ***
 				safeprintf("Nb de paquets dans la queue de faible priorité - apres production de TaskComputing: %d \n", lowQ.MsgQ.NbrEntries);//***
 				break;
 
@@ -360,9 +358,8 @@ void TaskForwarding(void* pdata) {
 
 	while (1) {
 		/* Si paquet vidéo prêt */
-//		TODO:				//************mettre qqch dans le paquet???
 //		1) Appel de fonction à compléter et 2) compléter safeprint
-		OSQPend(&highQ, 0, OS_OPT_PEND_NON_BLOCKING, &msg_size, &ts, &err);//***
+		packet = OSQPend(&highQ, 0, OS_OPT_PEND_NON_BLOCKING, &msg_size, &ts, &err);//***
 		safeprintf("Nb de paquets dans la queue de haute priorité - apres consommation de TaskFowarding: %d \n", highQ.MsgQ.NbrEntries);//***
 		if (err == OS_ERR_NONE) {
 			/* Envoi du paquet */
@@ -471,8 +468,8 @@ void TaskOutputPort(void* data) {
 		/*Attente d'un paquet*/
 //		TODO:
 //		1) Appel de fonction à compléter, 2) compléter err_msg 
-		OSTaskQPend(0, OS_OPT_PEND_NON_BLOCKING, &msg_size, &ts, &err);//***
-//		err_msg("PRINT : À compléter",err);
+		packet = OSTaskQPend(0, OS_OPT_PEND_NON_BLOCKING, &msg_size, &ts, &err);//***
+		err_msg("PRINT : erreur dans la recherche du packet", err); //***
 
 		OSMutexPend(&mutPrint, 0, OS_OPT_PEND_BLOCKING, &ts, &err);
 		/*impression des infos du paquets*/
@@ -528,7 +525,7 @@ void TaskStats(void* pdata) {
 		printf("Nb de paquets rejetés dans l’interface de sortie : %d \n\n", packet_rejete_output_port_plein);
 
 		// 6)  Nb de paquets maximum dans le fifo d'entrée
-		printf("Nb de paquets maximum dans le fifo d'entrée : %d \n\n", nbPacketMaxFifoEntree); // ************ need help \ verifier
+		printf("Nb de paquets maximum dans le fifo d'entrée : %d \n\n", nbPacketMaxFifoEntree);
 
 		// 7)  Nb de paquets maximum dans highQ 
 		printf(" Nb de paquets maximum dans highQ : %d \n\n", highQ.MsgQ.NbrEntriesMax);
