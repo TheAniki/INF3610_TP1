@@ -511,10 +511,10 @@ void TaskStats(void* pdata) {
 
 		//		TODO : À compléter en utilisant la numérotation de 1 à 15  dans l'énoncé du laboratoire
 		// 1)  Nb de paquets total créés
-		printf("1- Nb de paquets total créés : %d \n\n", nbPacketCrees);
+		printf("1- Nb de paquets total créés : %d \n", nbPacketCrees);
 
 		// 2)  Nb de paquets total traités 
-		printf("2- Nb de paquets total traités : %d \n\n", nbPacketTraites);
+		printf("2- Nb de paquets total traités : %d \n", nbPacketTraites);
 
 		// 3)  Nb de paquets rejetés pour mauvaise source (adresse)
 		printf("3- Nb de paquets rejetés pour mauvaise source (adresse) : %d \n", nbPacketSourceRejete);
@@ -526,7 +526,7 @@ void TaskStats(void* pdata) {
 		printf("5- Nb de paquets rejetés dans l’interface de sortie : %d \n", packet_rejete_output_port_plein);
 
 		// 6)  Nb de paquets maximum dans le fifo d'entrée
-		printf("6- Nb de paquets maximum dans le fifo d'entrée : %d \n", nbPacketMaxFifoEntree);
+		printf("6- Nb de paquets maximum dans le fifo d'entrée : %d \n", TaskStatsTCB.MsgQ.NbrEntriesMax);
 
 		// 7)  Nb de paquets maximum dans highQ 
 		printf("7- Nb de paquets maximum dans highQ : %d \n", highQ.MsgQ.NbrEntriesMax);
