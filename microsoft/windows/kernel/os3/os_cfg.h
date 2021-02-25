@@ -85,13 +85,13 @@
 
 
                                                                 /* -------------------------- TASK MANAGEMENT -------------------------- */
-#define OS_CFG_STAT_TASK_EN             DEF_ENABLED             /* Enable (DEF_ENABLED) the statistics task                              */
+#define OS_CFG_STAT_TASK_EN             1u                      /* Enable (DEF_ENABLED) the statistics task                              */
 #define OS_CFG_STAT_TASK_STK_CHK_EN     DEF_ENABLED             /*     Check task stacks (DEF_ENABLED) from the statistic task           */
 
 #define OS_CFG_TASK_CHANGE_PRIO_EN      DEF_ENABLED             /* Include (DEF_ENABLED) code for OSTaskChangePrio()                     */
 #define OS_CFG_TASK_DEL_EN              DEF_ENABLED             /* Include (DEF_ENABLED) code for OSTaskDel()                            */
 #define OS_CFG_TASK_IDLE_EN             DEF_ENABLED             /* Include (DEF_ENABLED) the idle task                                   */
-#define OS_CFG_TASK_PROFILE_EN          DEF_ENABLED             /* Include (DEF_ENABLED) variables in OS_TCB for profiling               */
+#define OS_CFG_TASK_PROFILE_EN          1u                      /* Include (DEF_ENABLED) variables in OS_TCB for profiling               */
 #define OS_CFG_TASK_Q_EN                DEF_ENABLED             /* Include (DEF_ENABLED) code for OSTaskQXXXX()                          */
 #define OS_CFG_TASK_Q_PEND_ABORT_EN     DEF_ENABLED             /* Include (DEF_ENABLED) code for OSTaskQPendAbort()                     */
 #define OS_CFG_TASK_REG_TBL_SIZE        1u                      /* Number of task specific registers                                     */

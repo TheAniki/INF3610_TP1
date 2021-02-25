@@ -227,6 +227,7 @@ void TaskGenerate(void* data) {
 
 			safeprintf("GENERATE: Generation de %d paquets durant les %d prochaines millisecondes\n", packGenQty, packGenQty * 2);
 		}
+		//if(nbPacketCrees) break;//***
 	}
 }
 
@@ -266,8 +267,8 @@ void TaskComputing(void* pdata) {
 	OS_TICK actualticks = 0;
 	while (true) {
 		//		1) Appel de fonction à compléter, 2) compléter safeprint et 3) compléter err_msg
-		packet = OSTaskQPend(0, OS_OPT_PEND_NON_BLOCKING, &msg_size, &ts, &err);//***
-		safeprintf("Nb de paquets dans le fifo d'entrée - apres consommation de TaskComputing: %d \n", mutPrint.PendList.NbrEntries);//***
+		packet = OSTaskQPend(0, OS_OPT_PEND_BLOCKING, &msg_size, &ts, &err);//***
+		safeprintf("Nb de paquets dans le fifo d'entrée - apres consommation de TaskComputing: %d \n", TaskComputingTCB.MsgQ.NbrEntries);//***
 		err_msg("TaskComputing: Erreur sur la recherche du prochain paquet", err); //***
 
 		// ****************************************************************** //
@@ -407,19 +408,19 @@ void dispatch_packet(Packet* packet) {
 
 		safeprintf("\n--Paquet dans Output Port no 0\n");
 		//		Appel de fonction à compléter
-		TaskOutputPort(&TaskOutputPortTCB[0]);//***
+		OSTaskQPost(&TaskOutputPortTCB[0], packet, sizeof(packet), OS_OPT_POST_FIFO + OS_OPT_POST_NO_SCHED, &err);//***
 	}
 	else {
 		if (packet->dst >= INT2_LOW && packet->dst <= INT2_HIGH) {
 			safeprintf("\n--Paquet dans Output Port no 1\n");
 			//			Appel de fonction à compléter
-			TaskOutputPort(&TaskOutputPortTCB[1]);//***
+			OSTaskQPost(&TaskOutputPortTCB[1], packet, sizeof(packet), OS_OPT_POST_FIFO + OS_OPT_POST_NO_SCHED, &err);//***
 		}
 		else {
 			if (packet->dst >= INT3_LOW && packet->dst <= INT3_HIGH) {
 				safeprintf("\n--Paquet dans OutputPort no 2\n");
 				//					Appel de fonction à compléter
-				TaskOutputPort(&TaskOutputPortTCB[2]);//***
+				OSTaskQPost(&TaskOutputPortTCB[2], packet, sizeof(packet), OS_OPT_POST_FIFO + OS_OPT_POST_NO_SCHED, &err);//***
 			}
 			else {
 				if (packet->dst >= INT_BC_LOW && packet->dst <= INT_BC_HIGH) {
@@ -433,7 +434,7 @@ void dispatch_packet(Packet* packet) {
 					}
 					safeprintf("\n--Paquet BC dans Output Port no 0 à 2\n");
 					//						Appels de fonction à compléter
-					TaskOutputPort(&TaskOutputPortTCB[3]);//***
+					//OSTaskQPost(&TaskOutputPortTCB[3], packet, sizeof(packet), OS_OPT_POST_FIFO + OS_OPT_POST_NO_SCHED, &err);//***
 				}
 			}
 		}
@@ -462,12 +463,13 @@ void TaskOutputPort(void* data) {
 	OS_MSG_SIZE msg_size;
 	Packet* packet = NULL;
 	Info_Port info = *(Info_Port*)data;
-
+	//TaskGenerate(data);
+	//TaskComputing(data);
+	//TaskForwarding(data);
 	while (1) {
 		/*Attente d'un paquet*/
-//		TODO:
 //		1) Appel de fonction à compléter, 2) compléter err_msg 
-		packet = OSTaskQPend(0, OS_OPT_PEND_NON_BLOCKING, &msg_size, &ts, &err);//***
+		packet = OSTaskQPend(0, OS_OPT_PEND_BLOCKING, &msg_size, &ts, &err);//***
 		err_msg("PRINT : erreur dans la recherche du packet", err); //***
 
 		OSMutexPend(&mutPrint, 0, OS_OPT_PEND_BLOCKING, &ts, &err);
@@ -509,49 +511,52 @@ void TaskStats(void* pdata) {
 
 		//		TODO : À compléter en utilisant la numérotation de 1 à 15  dans l'énoncé du laboratoire
 		// 1)  Nb de paquets total créés
-		printf("Nb de paquets total créés : %d \n\n", nbPacketCrees);
+		printf("1- Nb de paquets total créés : %d \n\n", nbPacketCrees);
 
 		// 2)  Nb de paquets total traités 
-		printf("Nb de paquets total traités : %d \n\n", nbPacketTraites);
+		printf("2- Nb de paquets total traités : %d \n\n", nbPacketTraites);
 
 		// 3)  Nb de paquets rejetés pour mauvaise source (adresse)
-		printf("Nb de paquets rejetés pour mauvaise source (adresse) : %d \n\n", nbPacketSourceRejete);
+		printf("3- Nb de paquets rejetés pour mauvaise source (adresse) : %d \n", nbPacketSourceRejete);
 
 		// 4)  Nb de paquets rejetés dans la fifo d’entrée 
-		printf("Nb de paquets rejetés dans la fifo d’entrée : %d \n\n", packet_rejete_fifo_pleine_inputQ);
+		printf("4- Nb de paquets rejetés dans la fifo d’entrée : %d \n", packet_rejete_fifo_pleine_inputQ);
 
 		// 5)  Nb de paquets rejetés dans l’interface de sortie 
-		printf("Nb de paquets rejetés dans l’interface de sortie : %d \n\n", packet_rejete_output_port_plein);
+		printf("5- Nb de paquets rejetés dans l’interface de sortie : %d \n", packet_rejete_output_port_plein);
 
 		// 6)  Nb de paquets maximum dans le fifo d'entrée
-		printf("Nb de paquets maximum dans le fifo d'entrée : %d \n\n", nbPacketMaxFifoEntree);
+		printf("6- Nb de paquets maximum dans le fifo d'entrée : %d \n", nbPacketMaxFifoEntree);
 
 		// 7)  Nb de paquets maximum dans highQ 
-		printf(" Nb de paquets maximum dans highQ : %d \n\n", highQ.MsgQ.NbrEntriesMax);
+		printf("7- Nb de paquets maximum dans highQ : %d \n", highQ.MsgQ.NbrEntriesMax);
 
 		// 8)  Nb de paquets maximum dans mediumQ 
-		printf(" Nb de paquets maximum dans mediumQ : %d \n\n", mediumQ.MsgQ.NbrEntriesMax);
+		printf("8- Nb de paquets maximum dans mediumQ : %d \n", mediumQ.MsgQ.NbrEntriesMax);
 
 		// 9)  Nb de paquets maximum dans lowQ 
-		printf(" Nb de paquets maximum dans lowQ : %d \n\n", lowQ.MsgQ.NbrEntriesMax);
+		printf("9- Nb de paquets maximum dans lowQ : %d \n", lowQ.MsgQ.NbrEntriesMax);
 
 		// 10) Pourcentage de temps CPU Max de TaskGenerate 
-		printf("Pourcentage de temps CPU Max de TaskGenerate : %u\% \n\n", TaskGenerateTCB.CPUUsageMax);
+		printf("10- Pourcentage de temps CPU Max de TaskGenerate : %u\% \n", TaskGenerateTCB.CPUUsageMax);
 
 		// 11) Pourcentage de temps CPU Max TaskComputing 
-		printf("Pourcentage de temps CPU Max de TaskComputing : %u\% \n\n", TaskComputingTCB.CPUUsageMax);
+		printf("11- Pourcentage de temps CPU Max de TaskComputing : %u\% \n", TaskComputingTCB.CPUUsageMax);
 
 		// 12)  Pourcentage de temps CPU Max TaskFowarding 
-		printf("Pourcentage de temps CPU Max de TaskFowarding : %u\% \n\n", TaskForwardingTCB.CPUUsageMax);
+		printf("12- Pourcentage de temps CPU Max de TaskFowarding : %u\% \n", TaskForwardingTCB.CPUUsageMax);
 
 		// 13) Pourcentage de temps CPU Max TaskOutputPort no 1 
-		printf("Pourcentage de temps CPU Max de TaskOutputPort no 1 : %u\% \n\n", TaskOutputPortTCB[0].CPUUsageMax);
+		printf("13- Pourcentage de temps CPU Max de TaskOutputPort no 1 : %u\% \n", TaskOutputPortTCB[0].CPUUsageMax);
 
 		// 14) Pourcentage de temps CPU Max TaskOutputPort no 2 
-		printf("Pourcentage de temps CPU Max de TaskOutputPort no 2 : %u\% \n\n", TaskOutputPortTCB[1].CPUUsageMax);
+		printf("14- Pourcentage de temps CPU Max de TaskOutputPort no 2 : %u\% \n", TaskOutputPortTCB[1].CPUUsageMax);
 
 		// 15) Pourcentage de temps CPU Max TaskOutputPort no 3 
-		printf("Pourcentage de temps CPU Max de TaskOutputPort no 3 : %u\% \n\n", TaskOutputPortTCB[2].CPUUsageMax);
+		printf("15- Pourcentage de temps CPU Max de TaskOutputPort no 3 : %u\% \n", TaskOutputPortTCB[2].CPUUsageMax);
+
+		printf("16- Pourcentage de temps CPU  : %d \n", OSStatTaskCPUUsage / 100);
+		printf("17- Pourcentage de temps CPU Max : %d \n", OSStatTaskCPUUsageMax / 100);
 
 		OSMutexPost(&mutPrint, OS_OPT_POST_NONE, &err);
 
