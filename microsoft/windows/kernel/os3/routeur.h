@@ -119,7 +119,7 @@ int nbPacketTraites = 0;							// Nb de paquets envoyés sur une interface
 int nbPacketSourceRejete = 0;						// Nb de packets rejetés pour mauvaise source
 int packet_rejete_fifo_pleine_inputQ = 0;			// Utilisation de la fifo d'entrée
 int packet_rejete_output_port_plein = 0;			// Utilisation des MB
-
+int packet_rejete_3Q = 0;
 
 /* ************************************************
  *              TASK PROTOTYPES

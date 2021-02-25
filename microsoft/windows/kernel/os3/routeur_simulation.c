@@ -118,7 +118,7 @@ int create_tasks() {
 
 	// Pour éviter d'avoir 3 fois le même code on a un tableau pour lequel chaque entrée appel TaskOutputPort avec des paramètres différents
 	for (i = 0; i < NB_OUTPUT_PORTS; i++) {
-		OSTaskCreate(&Port[i], "OutputPort", TaskOutputPort, &Port[i], TaskOutputPortPRIO, &TaskOutputPortSTK[i][0u], TASK_STK_SIZE / 2, TASK_STK_SIZE, 1, 0, (void*)0, (OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), &err);
+		OSTaskCreate(&TaskOutputPortTCB[i], "OutputPort", TaskOutputPort, &Port[i], TaskOutputPortPRIO, &TaskOutputPortSTK[i][0u], TASK_STK_SIZE / 2, TASK_STK_SIZE, 1, 0, (void*)0, (OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), &err);
 	};
 
 	OSTaskCreate(&TaskStatsTCB, "TaskStats", TaskStats, (void*)0, TaskStatsPRIO, &TaskStatsSTK[0u], TASK_STK_SIZE / 2, TASK_STK_SIZE, 1, 0, (void*)0, (OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), &err);
@@ -198,7 +198,7 @@ void TaskGenerate(void* data) {
 
 			safeprintf("Nb de paquets dans le fifo d'entrée - apres production de TaskGenenerate: %d \n", TaskComputingTCB.MsgQ.NbrEntries);
 
-			if (err == OS_ERR_Q_MAX) {
+			if (err == OS_ERR_Q_MAX || err== OS_ERR_MSG_POOL_EMPTY) {
 
 				OSMutexPend(&mutAlloc, 0, OS_OPT_PEND_BLOCKING, &ts, &err);
 				safeprintf("GENERATE: Paquet rejete a l'entree car la FIFO est pleine !\n");
@@ -279,9 +279,9 @@ void TaskComputing(void* pdata) {
 			 //		Code de l'attente active à compléter, utilisez la constante WAITFORComputing 
 		actualticks = OSTimeGet(&err);
 		printf("Attente active de 3 ticks \r\n");
-		while (WAITFORComputing > OSTimeGet(&err)) {}
-
-		OSTimeDlyHMSM(0, 0, 10, 0, OS_OPT_TIME_HMSM_STRICT, &err);
+		while (WAITFORComputing + actualticks > OSTimeGet(&err)) {}
+				
+		
 		// ****************************************************************** //
 
 		//Verification de l'espace d'addressage
@@ -330,11 +330,11 @@ void TaskComputing(void* pdata) {
 			default:
 				break;
 			}
-			if (err == OS_ERR_Q_MAX) {
+			if (err == OS_ERR_Q_MAX || err == OS_ERR_MSG_POOL_EMPTY ) {
 				safeprintf("TaskComputing : QFULL.\n");
 				OSMutexPend(&mutAlloc, 0, OS_OPT_PEND_BLOCKING, &ts, &err);//***
 				free(packet);//***
-				packet_rejete_fifo_pleine_inputQ++;//***
+				packet_rejete_3Q++;//***
 				OSMutexPost(&mutAlloc, OS_OPT_POST_NONE, &err);//***
 			}
 
@@ -380,7 +380,7 @@ void TaskForwarding(void* pdata) {
 			else {
 				/* Si paquet autre prêt */
 //				1) Appel de fonction à compléter et 2) compléter safeprint	
-				OSQPend(&lowQ, 0, OS_OPT_PEND_BLOCKING, &msg_size, &ts, &err);//***			
+				OSQPend(&lowQ, 0, OS_OPT_PEND_NON_BLOCKING, &msg_size, &ts, &err);//***	
 				safeprintf("Nb de paquets dans la queue de faible priorité - apres consommation de TaskFowarding: %d \n", lowQ.MsgQ.NbrEntries);//***
 				if (err == OS_ERR_NONE) {
 					/* Envoi du paquet */
@@ -408,19 +408,19 @@ void dispatch_packet(Packet* packet) {
 
 		safeprintf("\n--Paquet dans Output Port no 0\n");
 		//		Appel de fonction à compléter
-		OSTaskQPost(&TaskOutputPortTCB[0], packet, sizeof(packet), OS_OPT_POST_FIFO + OS_OPT_POST_NO_SCHED, &err);//***
+		OSTaskQPost(&TaskOutputPortTCB[0], packet, sizeof(Packet), OS_OPT_POST_FIFO, &err);//***
 	}
 	else {
 		if (packet->dst >= INT2_LOW && packet->dst <= INT2_HIGH) {
 			safeprintf("\n--Paquet dans Output Port no 1\n");
 			//			Appel de fonction à compléter
-			OSTaskQPost(&TaskOutputPortTCB[1], packet, sizeof(packet), OS_OPT_POST_FIFO + OS_OPT_POST_NO_SCHED, &err);//***
+			OSTaskQPost(&TaskOutputPortTCB[1], packet, sizeof(Packet), OS_OPT_POST_FIFO, &err);//***
 		}
 		else {
 			if (packet->dst >= INT3_LOW && packet->dst <= INT3_HIGH) {
 				safeprintf("\n--Paquet dans OutputPort no 2\n");
 				//					Appel de fonction à compléter
-				OSTaskQPost(&TaskOutputPortTCB[2], packet, sizeof(packet), OS_OPT_POST_FIFO + OS_OPT_POST_NO_SCHED, &err);//***
+				OSTaskQPost(&TaskOutputPortTCB[2], packet, sizeof(Packet), OS_OPT_POST_FIFO, &err);//***
 			}
 			else {
 				if (packet->dst >= INT_BC_LOW && packet->dst <= INT_BC_HIGH) {
@@ -434,12 +434,14 @@ void dispatch_packet(Packet* packet) {
 					}
 					safeprintf("\n--Paquet BC dans Output Port no 0 à 2\n");
 					//						Appels de fonction à compléter
-					//OSTaskQPost(&TaskOutputPortTCB[3], packet, sizeof(packet), OS_OPT_POST_FIFO + OS_OPT_POST_NO_SCHED, &err);//***
+					OSTaskQPost(&TaskOutputPortTCB[0], packet, sizeof(Packet), OS_OPT_POST_FIFO, &err);//***
+					OSTaskQPost(&TaskOutputPortTCB[1], others[0], sizeof(Packet), OS_OPT_POST_FIFO, &err);//***
+					OSTaskQPost(&TaskOutputPortTCB[2], others[1], sizeof(Packet), OS_OPT_POST_FIFO, &err);//***
 				}
 			}
 		}
 	}
-	if (err == OS_ERR_Q_MAX) {
+	if (err == OS_ERR_Q_MAX || err == OS_ERR_MSG_POOL_EMPTY ) {
 		/*Destruction du paquet si la mailbox de destination est pleine*/
 
 		OSMutexPend(&mutAlloc, 0, OS_OPT_PEND_BLOCKING, &ts, &err);
@@ -500,9 +502,23 @@ void TaskStats(void* pdata) {
 	CPU_TS ts;
 	OS_TICK actualticks;
 
-	//OSStatTaskCPUUsageInit(&err);
-	Suspend_Delay_Resume_All(1);
-	//OSStatReset(&err);
+	OSTaskSuspend(&TaskGenerateTCB, &err);
+	OSTaskSuspend(&TaskComputingTCB, &err);
+	OSTaskSuspend(&TaskForwardingTCB, &err);
+
+	for (int i = 0; i < NB_OUTPUT_PORTS; i++) {
+		OSTaskSuspend(&TaskOutputPortTCB[i], &err);
+	};
+
+	OSStatTaskCPUUsageInit(&err);
+	OSStatReset(&err);
+
+	OSTaskResume(&TaskGenerateTCB, &err);
+	OSTaskResume(&TaskComputingTCB, &err);
+	OSTaskResume(&TaskForwardingTCB, &err);
+	for (int i = 0; i < NB_OUTPUT_PORTS; i++) {
+		OSTaskResume(&TaskOutputPortTCB[i], &err);
+	}
 
 	while (1) {
 		OSMutexPend(&mutPrint, 0, OS_OPT_PEND_BLOCKING, &ts, &err);
@@ -587,9 +603,8 @@ void Suspend_Delay_Resume_All(int nb_sec) {
 		OSTaskSuspend(&TaskOutputPortTCB[i], &err);
 	};
 
-	OSStatTaskCPUUsageInit(&err);
-	OSStatReset(&err);
-
+	OSTimeDlyHMSM(0, 0, nb_sec, 0, OS_OPT_TIME_HMSM_STRICT, &err);
+	
 	OSTaskResume(&TaskGenerateTCB, &err);
 	OSTaskResume(&TaskComputingTCB, &err);
 	OSTaskResume(&TaskForwardingTCB, &err);
