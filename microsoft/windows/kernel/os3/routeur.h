@@ -22,7 +22,7 @@
  **************************************************/
 
 #define          TaskGeneratePRIO   			15
-#define			 TaskStatsPRIO 					13
+#define			 TaskStatsPRIO 					12
 #define          TaskComputingPRIO  			21
 #define          TaskForwardingPRIO 			22
 #define          TaskOutputPortPRIO     		20
@@ -85,11 +85,14 @@ static CPU_STK TaskOutputPortSTK[NB_OUTPUT_PORTS][TASK_STK_SIZE];
 
 static CPU_STK TaskStatsSTK[TASK_STK_SIZE];
 
+//static CPU_STK StartupTaskStk[TASK_STK_SIZE];
+
 static OS_TCB TaskGenerateTCB;
 static OS_TCB TaskStatsTCB;
 static OS_TCB TaskComputingTCB;
 static OS_TCB TaskForwardingTCB;
 static OS_TCB TaskOutputPortTCB[NB_OUTPUT_PORTS];
+//static OS_TCB StartupTaskTCB;
 
 /* ************************************************
  *                  Queues
@@ -130,6 +133,7 @@ void TaskComputing(void *data);
 void TaskForwarding(void *data);
 void TaskOutputPort(void *data);
 void TaskStats(void* data);
+//void StartupTask(void* data);
 
 void dispatch_packet (Packet* packet);
 

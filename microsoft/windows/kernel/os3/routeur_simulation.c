@@ -227,7 +227,6 @@ void TaskGenerate(void* data) {
 
 			safeprintf("GENERATE: Generation de %d paquets durant les %d prochaines millisecondes\n", packGenQty, packGenQty * 2);
 		}
-		//if(nbPacketCrees) break;//***
 	}
 }
 
@@ -277,11 +276,8 @@ void TaskComputing(void* pdata) {
 			 * exactement 3 ticks pour la question dans l'énoncé).
 			 */
 			 //		Code de l'attente active à compléter, utilisez la constante WAITFORComputing 
-		actualticks = OSTimeGet(&err);
-		printf("Attente active de 3 ticks \r\n");
-		while (WAITFORComputing + actualticks > OSTimeGet(&err)) {}
-				
-		
+		actualticks = OSTimeGet(&err);//***
+		while (WAITFORComputing + actualticks > OSTimeGet(&err)) {}//***
 		// ****************************************************************** //
 
 		//Verification de l'espace d'addressage
@@ -370,7 +366,7 @@ void TaskForwarding(void* pdata) {
 
 			/* Si paquet audio prêt */
 //			1) Appel de fonction à compléter et 2) compléter safeprint
-			OSQPend(&mediumQ, 0, OS_OPT_PEND_NON_BLOCKING, &msg_size, &ts, &err);//***
+			packet = OSQPend(&mediumQ, 0, OS_OPT_PEND_NON_BLOCKING, &msg_size, &ts, &err);//***
 			safeprintf("Nb de paquets dans la queue de moyenne priorité - apres consommation de TaskFowarding: %d \n", mediumQ.MsgQ.NbrEntries);//***
 			if (err == OS_ERR_NONE) {
 				/* Envoi du paquet */
@@ -380,7 +376,7 @@ void TaskForwarding(void* pdata) {
 			else {
 				/* Si paquet autre prêt */
 //				1) Appel de fonction à compléter et 2) compléter safeprint	
-				OSQPend(&lowQ, 0, OS_OPT_PEND_NON_BLOCKING, &msg_size, &ts, &err);//***	
+				packet = OSQPend(&lowQ, 0, OS_OPT_PEND_NON_BLOCKING, &msg_size, &ts, &err);//***	
 				safeprintf("Nb de paquets dans la queue de faible priorité - apres consommation de TaskFowarding: %d \n", lowQ.MsgQ.NbrEntries);//***
 				if (err == OS_ERR_NONE) {
 					/* Envoi du paquet */
@@ -465,9 +461,6 @@ void TaskOutputPort(void* data) {
 	OS_MSG_SIZE msg_size;
 	Packet* packet = NULL;
 	Info_Port info = *(Info_Port*)data;
-	//TaskGenerate(data);
-	//TaskComputing(data);
-	//TaskForwarding(data);
 	while (1) {
 		/*Attente d'un paquet*/
 //		1) Appel de fonction à compléter, 2) compléter err_msg 
