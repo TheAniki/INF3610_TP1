@@ -566,6 +566,9 @@ void TaskStats(void* pdata) {
 
 		printf("16- Pourcentage de temps CPU  : %d \n", OSStatTaskCPUUsage / 100);
 		printf("17- Pourcentage de temps CPU Max : %d \n", OSStatTaskCPUUsageMax / 100);
+		printf("18- Message free : %d \n", OSMsgPool.NbrFree);
+		printf("19- Message used : %d \n", OSMsgPool.NbrUsed);
+		printf("20- Message used max : %d \n", OSMsgPool.NbrUsedMax);
 
 		OSMutexPost(&mutPrint, OS_OPT_POST_NONE, &err);
 
