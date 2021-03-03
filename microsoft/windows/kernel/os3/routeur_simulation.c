@@ -25,16 +25,16 @@
 
 // À utiliser pour suivre le remplissage et le vidage des fifos
 // Mettre en commentaire et utiliser la fonction vide suivante si vous ne voulez pas de trace
-#define safeprintf(fmt, ...)															\
-{																						\
-	OSMutexPend(&mutPrint, 0, OS_OPT_PEND_BLOCKING, &ts, &perr);						\
-	printf(fmt, ##__VA_ARGS__);															\
-	OSMutexPost(&mutPrint, OS_OPT_POST_NONE, &perr);									\
-}
+//#define safeprintf(fmt, ...)															\
+//{																						\
+//	OSMutexPend(&mutPrint, 0, OS_OPT_PEND_BLOCKING, &ts, &perr);						\
+//	printf(fmt, ##__VA_ARGS__);															\
+//	OSMutexPost(&mutPrint, OS_OPT_POST_NONE, &perr);									\
+//}
 
 // À utiliser pour ne pas avoir les traces de remplissage et de vidage des fifos
-//#define safeprintf(fmt, ...)															\
-//{			}
+#define safeprintf(fmt, ...)															\
+{			}
 
 
 
@@ -359,8 +359,9 @@ void TaskForwarding(void* pdata) {
 		safeprintf("Nb de paquets dans la queue de haute priorité - apres consommation de TaskFowarding: %d \n", highQ.MsgQ.NbrEntries);//***
 		if (err == OS_ERR_NONE) {
 			/* Envoi du paquet */
+			++nbPacketTraites;//***
+			safeprintf("\n--TaskForwarding:  paquets %d envoyes\n\n", nbPacketTraites);
 			dispatch_packet(packet);
-			safeprintf("\n--TaskForwarding:  paquets %d envoyes\n\n", ++nbPacketTraites);
 		}
 		else {
 
@@ -370,8 +371,9 @@ void TaskForwarding(void* pdata) {
 			safeprintf("Nb de paquets dans la queue de moyenne priorité - apres consommation de TaskFowarding: %d \n", mediumQ.MsgQ.NbrEntries);//***
 			if (err == OS_ERR_NONE) {
 				/* Envoi du paquet */
+				++nbPacketTraites;//***
+				safeprintf("\n--TaskForwarding: paquets %d envoyes\n\n", nbPacketTraites);
 				dispatch_packet(packet);
-				safeprintf("\n--TaskForwarding: paquets %d envoyes\n\n", ++nbPacketTraites);
 			}
 			else {
 				/* Si paquet autre prêt */
@@ -380,8 +382,9 @@ void TaskForwarding(void* pdata) {
 				safeprintf("Nb de paquets dans la queue de faible priorité - apres consommation de TaskFowarding: %d \n", lowQ.MsgQ.NbrEntries);//***
 				if (err == OS_ERR_NONE) {
 					/* Envoi du paquet */
+					++nbPacketTraites;//***
+					safeprintf("\n--TaskForwarding: paquets %d envoyes\n\n", nbPacketTraites);
 					dispatch_packet(packet);
-					safeprintf("\n--TaskForwarding: paquets %d envoyes\n\n", ++nbPacketTraites);
 				}
 			}
 		}
@@ -520,22 +523,24 @@ void TaskStats(void* pdata) {
 
 		//		TODO : À compléter en utilisant la numérotation de 1 à 15  dans l'énoncé du laboratoire
 		// 1)  Nb de paquets total créés
-		printf("1- Nb de paquets total créés : %d \n", nbPacketCrees);
+		printf("1- Nb de paquets total crees : %d \n", nbPacketCrees);
 
 		// 2)  Nb de paquets total traités 
-		printf("2- Nb de paquets total traités : %d \n", nbPacketTraites);
+		printf("2- Nb de paquets total traites : %d \n", nbPacketTraites);
 
 		// 3)  Nb de paquets rejetés pour mauvaise source (adresse)
-		printf("3- Nb de paquets rejetés pour mauvaise source (adresse) : %d \n", nbPacketSourceRejete);
+		printf("3- Nb de paquets rejetes pour mauvaise source (adresse) : %d \n", nbPacketSourceRejete);
 
 		// 4)  Nb de paquets rejetés dans la fifo d’entrée 
-		printf("4- Nb de paquets rejetés dans la fifo d’entrée : %d \n", packet_rejete_fifo_pleine_inputQ);
+		printf("4- Nb de paquets rejetes dans la fifo d entree : %d \n", packet_rejete_fifo_pleine_inputQ);
+
+		printf("4.5- Nb de paquets rejetes dans les Q : %d\n", packet_rejete_3Q);
 
 		// 5)  Nb de paquets rejetés dans l’interface de sortie 
-		printf("5- Nb de paquets rejetés dans l’interface de sortie : %d \n", packet_rejete_output_port_plein);
+		printf("5- Nb de paquets rejetes dans l interface de sortie : %d \n", packet_rejete_output_port_plein);
 
 		// 6)  Nb de paquets maximum dans le fifo d'entrée
-		printf("6- Nb de paquets maximum dans le fifo d'entrée : %d \n", TaskStatsTCB.MsgQ.NbrEntriesMax);
+		printf("6- Nb de paquets maximum dans le fifo d entree : %d \n", TaskGenerateTCB.MsgQ.NbrEntriesMax);
 
 		// 7)  Nb de paquets maximum dans highQ 
 		printf("7- Nb de paquets maximum dans highQ : %d \n", highQ.MsgQ.NbrEntriesMax);
