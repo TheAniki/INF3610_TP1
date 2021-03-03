@@ -540,7 +540,7 @@ void TaskStats(void* pdata) {
 		printf("5- Nb de paquets rejetes dans l interface de sortie : %d \n\n", packet_rejete_output_port_plein);
 
 		// 6)  Nb de paquets maximum dans le fifo d'entrée
-		printf("6- Nb de paquets maximum dans le fifo d entree : %d \n", TaskGenerateTCB.MsgQ.NbrEntriesSize); 
+		printf("6- Nb de paquets maximum dans le fifo d entree : %d \n", TaskGenerateTCB.MsgQ.NbrEntriesMax); 
 
 		// 7)  Nb de paquets maximum dans highQ 
 		printf("7- Nb de paquets maximum dans highQ : %d \n", highQ.MsgQ.NbrEntriesMax);
