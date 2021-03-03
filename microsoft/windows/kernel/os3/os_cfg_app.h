@@ -43,7 +43,7 @@
                                                                 /* ------------------ MISCELLANEOUS ------------------- */
 #define  OS_CFG_ISR_STK_SIZE                         100u       /* Stack size of ISR stack (number of CPU_STK elements) */
 
-#define  OS_CFG_MSG_POOL_SIZE                         1024u       /* Maximum number of messages                           */
+#define  OS_CFG_MSG_POOL_SIZE                        5000u       /* Maximum number of messages                           */
 
 #define  OS_CFG_TASK_STK_LIMIT_PCT_EMPTY              10u       /* Stack limit position in percentage to empty          */
 
