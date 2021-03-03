@@ -221,9 +221,9 @@ void TaskGenerate(void* data) {
 		}
 		else
 		{
-			OSTimeDlyHMSM(0, 0, 2, 0, OS_OPT_TIME_HMSM_STRICT, &err);
+			OSTimeDlyHMSM(0, 0, 2, 0, OS_OPT_TIME_HMSM_STRICT, &err); // 2 sec
 			isGenPhase = true;
-			do { packGenQty = (rand() % 256); } while (packGenQty == 0);
+			do { packGenQty = (rand() % 256); } while (packGenQty == 0); // 255 paquets
 
 			safeprintf("GENERATE: Generation de %d paquets durant les %d prochaines millisecondes\n", packGenQty, packGenQty * 2);
 		}
@@ -521,12 +521,12 @@ void TaskStats(void* pdata) {
 
 		printf("\n------------------ Affichage des statistiques ------------------\n\n");
 
-		//		TODO : À compléter en utilisant la numérotation de 1 à 15  dans l'énoncé du laboratoire
+		// À compléter en utilisant la numérotation de 1 à 15  dans l'énoncé du laboratoire
 		// 1)  Nb de paquets total créés
 		printf("1- Nb de paquets total crees : %d \n", nbPacketCrees);
 
 		// 2)  Nb de paquets total traités 
-		printf("2- Nb de paquets total traites : %d \n", nbPacketTraites);
+		printf("2- Nb de paquets total traites : %d \n\n", nbPacketTraites);
 
 		// 3)  Nb de paquets rejetés pour mauvaise source (adresse)
 		printf("3- Nb de paquets rejetes pour mauvaise source (adresse) : %d \n", nbPacketSourceRejete);
@@ -537,10 +537,10 @@ void TaskStats(void* pdata) {
 		printf("4.5- Nb de paquets rejetes dans les Q : %d\n", packet_rejete_3Q);
 
 		// 5)  Nb de paquets rejetés dans l’interface de sortie 
-		printf("5- Nb de paquets rejetes dans l interface de sortie : %d \n", packet_rejete_output_port_plein);
+		printf("5- Nb de paquets rejetes dans l interface de sortie : %d \n\n", packet_rejete_output_port_plein);
 
 		// 6)  Nb de paquets maximum dans le fifo d'entrée
-		printf("6- Nb de paquets maximum dans le fifo d entree : %d \n", TaskGenerateTCB.MsgQ.NbrEntriesMax);
+		printf("6- Nb de paquets maximum dans le fifo d entree : %d \n", TaskGenerateTCB.MsgQ.NbrEntriesSize); 
 
 		// 7)  Nb de paquets maximum dans highQ 
 		printf("7- Nb de paquets maximum dans highQ : %d \n", highQ.MsgQ.NbrEntriesMax);
@@ -549,7 +549,7 @@ void TaskStats(void* pdata) {
 		printf("8- Nb de paquets maximum dans mediumQ : %d \n", mediumQ.MsgQ.NbrEntriesMax);
 
 		// 9)  Nb de paquets maximum dans lowQ 
-		printf("9- Nb de paquets maximum dans lowQ : %d \n", lowQ.MsgQ.NbrEntriesMax);
+		printf("9- Nb de paquets maximum dans lowQ : %d \n\n", lowQ.MsgQ.NbrEntriesMax);
 
 		// 10) Pourcentage de temps CPU Max de TaskGenerate 
 		printf("10- Pourcentage de temps CPU Max de TaskGenerate : %u\% \n", TaskGenerateTCB.CPUUsageMax);
