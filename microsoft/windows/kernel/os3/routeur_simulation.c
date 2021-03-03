@@ -223,7 +223,7 @@ void TaskGenerate(void* data) {
 		{
 			OSTimeDlyHMSM(0, 0, 2, 0, OS_OPT_TIME_HMSM_STRICT, &err); // 2 sec
 			isGenPhase = true;
-			do { packGenQty = (rand() % 256); } while (packGenQty == 0); // 255 paquets
+			do { packGenQty = (rand() % 255); } while (packGenQty == 0); // 255 paquets
 
 			safeprintf("GENERATE: Generation de %d paquets durant les %d prochaines millisecondes\n", packGenQty, packGenQty * 2);
 		}
@@ -446,7 +446,7 @@ void dispatch_packet(Packet* packet) {
 		OSMutexPend(&mutAlloc, 0, OS_OPT_PEND_BLOCKING, &ts, &err);
 		safeprintf("\n--TaskForwarding: Erreur mailbox full\n");
 		free(packet);
-		packet_rejete_output_port_plein++;
+		packet_rejete_3Q++;
 		OSMutexPost(&mutAlloc, OS_OPT_POST_NONE, &err);
 
 	}
