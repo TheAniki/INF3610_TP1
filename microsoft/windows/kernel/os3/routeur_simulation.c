@@ -25,16 +25,16 @@
 
 // À utiliser pour suivre le remplissage et le vidage des fifos
 // Mettre en commentaire et utiliser la fonction vide suivante si vous ne voulez pas de trace
-//#define safeprintf(fmt, ...)															\
-//{																						\
-//	OSMutexPend(&mutPrint, 0, OS_OPT_PEND_BLOCKING, &ts, &perr);						\
-//	printf(fmt, ##__VA_ARGS__);															\
-//	OSMutexPost(&mutPrint, OS_OPT_POST_NONE, &perr);									\
-//}
+#define safeprintf(fmt, ...)															\
+{																						\
+	OSMutexPend(&mutPrint, 0, OS_OPT_PEND_BLOCKING, &ts, &perr);						\
+	printf(fmt, ##__VA_ARGS__);															\
+	OSMutexPost(&mutPrint, OS_OPT_POST_NONE, &perr);									\
+}
 
 // À utiliser pour ne pas avoir les traces de remplissage et de vidage des fifos
-#define safeprintf(fmt, ...)															\
-{			}
+//#define safeprintf(fmt, ...)															\
+//{			}
 
 
 
@@ -223,7 +223,7 @@ void TaskGenerate(void* data) {
 		{
 			OSTimeDlyHMSM(0, 0, 2, 0, OS_OPT_TIME_HMSM_STRICT, &err); // 2 sec
 			isGenPhase = true;
-			do { packGenQty = (rand() % 255); } while (packGenQty == 0); // 255 paquets
+			do { packGenQty = (rand() % 256); } while (packGenQty == 0); // 255 paquets
 
 			safeprintf("GENERATE: Generation de %d paquets durant les %d prochaines millisecondes\n", packGenQty, packGenQty * 2);
 		}
@@ -446,7 +446,7 @@ void dispatch_packet(Packet* packet) {
 		OSMutexPend(&mutAlloc, 0, OS_OPT_PEND_BLOCKING, &ts, &err);
 		safeprintf("\n--TaskForwarding: Erreur mailbox full\n");
 		free(packet);
-		packet_rejete_3Q++;
+		packet_rejete_output_port_plein++;
 		OSMutexPost(&mutAlloc, OS_OPT_POST_NONE, &err);
 
 	}
@@ -540,7 +540,7 @@ void TaskStats(void* pdata) {
 		printf("5- Nb de paquets rejetes dans l interface de sortie : %d \n\n", packet_rejete_output_port_plein);
 
 		// 6)  Nb de paquets maximum dans le fifo d'entrée
-		printf("6- Nb de paquets maximum dans le fifo d entree : %d \n", TaskGenerateTCB.MsgQ.NbrEntriesMax); 
+		printf("6- Nb de paquets maximum dans le fifo d entree : %d \n", TaskStatsTCB.MsgQ.NbrEntriesMax); 
 
 		// 7)  Nb de paquets maximum dans highQ 
 		printf("7- Nb de paquets maximum dans highQ : %d \n", highQ.MsgQ.NbrEntriesMax);
